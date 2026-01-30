@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: user-payment-service
+  profiles:
+    active: dev
+  datasource:
+    url: jdbc:postgresql://localhost:5432/payment_db
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+
+app:
+  name: Payment Service
+  version: 1.0.0

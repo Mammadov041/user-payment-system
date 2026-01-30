@@ -1,0 +1,20 @@
+server:
+  port: 8090
+
+app:
+  env: production
+  logging:
+    level: INFO
+    detailed: false
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/payment_db_prod
+    username: prod_user
+    password: prod_password
+    driver-class-name: org.postgresql.Driver
+
+logging:
+  level:
+    com.example.userpaymentservice: INFO
+    org.springframework.jdbc.core: WARN

@@ -1,0 +1,20 @@
+server:
+  port: 8080
+
+app:
+  env: development
+  logging:
+    level: DEBUG
+    detailed: true
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/payment_db_dev
+    username: dev_user
+    password: dev_password
+    driver-class-name: org.postgresql.Driver
+
+logging:
+  level:
+    com.example.userpaymentservice: DEBUG
+    org.springframework.jdbc.core: DEBUG
