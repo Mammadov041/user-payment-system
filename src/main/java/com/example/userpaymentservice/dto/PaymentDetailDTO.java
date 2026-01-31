@@ -1,12 +1,12 @@
 package com.example.userpaymentservice.dto;
 
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
 
 public record PaymentDetailDTO(
         Long paymentId,
         Long userId,
         double amount,
         String status,
-        LocalDateTime createdAt
+        Timestamp createdAt
 ) {
 }

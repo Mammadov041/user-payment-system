@@ -9,6 +9,7 @@ import com.example.userpaymentservice.exception.InsufficientBalanceException;
 import com.example.userpaymentservice.exception.PaymentNotFoundException;
 import com.example.userpaymentservice.exception.UserNotFoundException;
 import com.example.userpaymentservice.service.PaymentServiceImpl;
+import com.example.userpaymentservice.service.UserServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,12 +25,14 @@ public class PaymentController {
     private static final Logger logger = LoggerFactory.getLogger(PaymentController.class);
 
     private final PaymentServiceImpl paymentService;
+    private final UserServiceImpl userService;
 
     @Value("${spring.profiles.active:default}")
     private String activeProfile;
 
-    public PaymentController(PaymentServiceImpl paymentService) {
+    public PaymentController(PaymentServiceImpl paymentService, UserServiceImpl userService) {
         this.paymentService = paymentService;
+        this.userService = userService;
     }
 
     @PostMapping
@@ -42,14 +45,12 @@ public class PaymentController {
 
         try {
             Payment payment = new Payment(dto.userId(), dto.amount(), "PENDING");
-            PaymentDTO result = paymentService.addPayment(payment);
-
+            var result = paymentService.addPayment(payment);
             if("dev".equals(activeProfile)) {
                 logger.info("DEV MODE: Payment created successfully - paymentId: {}, status: {}, newBalance: {}",
-                        result.paymentId(), result.status(), result.balance());
+                        result.getId(), result.getStatus(), userService.getUserById(result.getUser_id()));
             }
-
-            return ResponseEntity.ok(result);
+            return ResponseEntity.ok(paymentService.mapToDTO(result));
         } catch (InsufficientBalanceException e) {
             if("dev".equals(activeProfile)) {
                 logger.error("DEV MODE: Insufficient balance error - {}", e.getMessage());
@@ -66,18 +67,18 @@ public class PaymentController {
     }
 
     @GetMapping
-    public ResponseEntity<List<PaymentDetailDTO>> getAllPayments() {
+    public ResponseEntity<List<PaymentDTO>> getAllPayments() {
         if("dev".equals(activeProfile)) {
             logger.info("DEV MODE: Fetching all payments");
         }
 
-        List<PaymentDetailDTO> payments = paymentService.getAllPayments();
+        List<Payment> payments = paymentService.getAllPayments();
 
         if("dev".equals(activeProfile)) {
             logger.info("DEV MODE: Retrieved {} payments", payments.size());
         }
 
-        return ResponseEntity.ok(payments);
+        return ResponseEntity.ok(payments.stream().map(p -> new PaymentDTO(p.getId(),p.getStatus(),userService.getUserById(p.getUser_id()).getBalance())).toList());
     }
 
     @GetMapping("/{paymentId}")
@@ -87,8 +88,8 @@ public class PaymentController {
         }
 
         try {
-            PaymentDetailDTO payment = paymentService.getPaymentById(paymentId);
-            return ResponseEntity.ok(payment);
+            Payment payment = paymentService.getPaymentById(paymentId);
+            return ResponseEntity.ok(paymentService.mapToDTO(payment));
         } catch (PaymentNotFoundException e) {
             if("dev".equals(activeProfile)) {
                 logger.error("DEV MODE: Payment not found - {}", e.getMessage());
@@ -105,13 +106,14 @@ public class PaymentController {
         }
 
         try {
-            List<PaymentDetailDTO> payments = paymentService.getPaymentsByUserId(userId);
+            List<Payment> payments = paymentService.getPaymentsByUserId(userId);
 
             if("dev".equals(activeProfile)) {
                 logger.info("DEV MODE: Retrieved {} payments for user {}", payments.size(), userId);
             }
 
-            return ResponseEntity.ok(payments);
+            var paymentsDetailed = payments.stream().map(p -> new PaymentDTO(p.getId(),p.getStatus(),userService.getUserById(p.getUser_id()).getBalance())).toList();
+            return ResponseEntity.ok(paymentsDetailed);
         } catch (UserNotFoundException e) {
             if("dev".equals(activeProfile)) {
                 logger.error("DEV MODE: User not found - {}", e.getMessage());

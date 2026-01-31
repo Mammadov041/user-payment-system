@@ -5,6 +5,7 @@ import com.example.userpaymentservice.dto.UserDTO;
 import com.example.userpaymentservice.entity.User;
 import com.example.userpaymentservice.exception.UserNotFoundException;
 import com.example.userpaymentservice.repository.UserRepositoryImpl;
+
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -19,7 +20,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDTO addUser(CreateUserDTO dto) {
+    public User addUser(CreateUserDTO dto) {
         User user = new User();
         user.setFullName(dto.fullName());
         user.setBalance(dto.balance());
@@ -32,35 +33,29 @@ public class UserServiceImpl implements UserService {
         // Since we don't get the ID back, we'll fetch the user by name
         // In production, you'd use RETURNING clause or GeneratedKeyHolder
         List<User> users = userRepository.findAll();
-        User createdUser = users.stream()
+
+        return users.stream()
                 .filter(u -> u.getFullName().equals(dto.fullName()))
                 .reduce((first, second) -> second) // Get the last one
                 .orElseThrow(() -> new RuntimeException("User created but not found"));
-
-        return mapToDTO(createdUser);
     }
 
     @Override
-    public List<UserDTO> getAllUsers() {
-        List<UserDTO> dtos = new ArrayList<>();
-        List<User> users = userRepository.findAll();
-        for(User user : users) {
-            dtos.add(mapToDTO(user));
-        }
-        return dtos;
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
     }
 
     @Override
-    public UserDTO getUserById(Long id) {
+    public User getUserById(Long id) {
         User user = userRepository.findById(id);
         if(user == null) {
             throw new UserNotFoundException("User not found");
         }
-        return mapToDTO(user);
+        return user;
     }
 
     @Override
-    public UserDTO updateUser(Long id, CreateUserDTO dto) {
+    public User updateUser(Long id, CreateUserDTO dto) {
         User user = userRepository.findById(id);
         if(user == null) {
             throw new UserNotFoundException("User not found");
@@ -74,7 +69,7 @@ public class UserServiceImpl implements UserService {
             throw new RuntimeException("User could not be updated");
         }
 
-        return mapToDTO(user);
+        return user;
     }
 
     @Override
