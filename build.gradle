@@ -25,10 +25,10 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-jdbc-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    // Source: https://mvnrepository.com/artifact/org.projectlombok/lombok
-    implementation 'org.projectlombok:lombok:1.18.42'
-    // Source: https://mvnrepository.com/artifact/org.springframework.data/spring-data-jpa
-    implementation 'org.springframework.data:spring-data-jpa:4.0.2'
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    // Spring Data JPA
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
 }
 

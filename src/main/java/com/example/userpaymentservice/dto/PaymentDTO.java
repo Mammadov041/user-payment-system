@@ -1,4 +1,4 @@
 package com.example.userpaymentservice.dto;
 
-public record PaymentDTO(Long paymentId,String status,double balance) {
+public record PaymentDTO(Long paymentId,String status,double balance,double amount) {
 }

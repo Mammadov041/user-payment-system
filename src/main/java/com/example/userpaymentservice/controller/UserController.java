@@ -2,7 +2,6 @@ package com.example.userpaymentservice.controller;
 
 import com.example.userpaymentservice.dto.CreateUserDTO;
 import com.example.userpaymentservice.dto.ErrorResponse;
-import com.example.userpaymentservice.dto.UserDTO;
 import com.example.userpaymentservice.dto.UserDetailDTO;
 import com.example.userpaymentservice.entity.User;
 import com.example.userpaymentservice.exception.UserNotFoundException;
@@ -14,7 +13,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
