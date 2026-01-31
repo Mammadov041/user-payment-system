@@ -27,7 +27,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     @Transactional
-    public PaymentDTO addPayment(Payment payment) {
+    public Payment addPayment(Payment payment) {
         // 1. Get user
         User user = userRepository.findById(payment.getUser_id());
         if(user == null) {
@@ -40,13 +40,6 @@ public class PaymentServiceImpl implements PaymentService {
             throw new InsufficientBalanceException("User balance is not enough");
         }
 
-        // 3. Create payment with PENDING status
-        payment.setStatus("PENDING");
-        int result = paymentRepository.create(payment);
-        if(result <= 0) {
-            throw new RuntimeException("Payment could not be created");
-        }
-
         // 4. Update user balance
         user.setBalance(newBalance);
         userRepository.update(user);
@@ -55,43 +48,37 @@ public class PaymentServiceImpl implements PaymentService {
         // Note: Since we don't have the generated ID, we'll need to modify this
         // For now, we'll assume the payment object gets the ID after creation
         payment.setStatus("SUCCESS");
-
-        // 6. Return DTO
-        return new PaymentDTO(payment.getId(), "SUCCESS", newBalance);
-    }
-
-    @Override
-    public List<PaymentDetailDTO> getAllPayments() {
-        List<PaymentDetailDTO> dtos = new ArrayList<>();
-        var payments = paymentRepository.findAll();
-        for(Payment p : payments){
-            dtos.add(mapToDetailDTO(p));
+        // 3. Create payment with SUCCESS status
+        int result = paymentRepository.create(payment);
+        if(result <= 0) {
+            throw new RuntimeException("Payment could not be created");
         }
-        return dtos;
+
+        // 6. Return payment
+        return paymentRepository.getUsersLastPayment(payment.getUser_id());
     }
 
     @Override
-    public PaymentDetailDTO getPaymentById(Long id) {
+    public List<Payment> getAllPayments() {
+        return paymentRepository.findAll();
+    }
+
+    @Override
+    public Payment getPaymentById(Long id) {
         var payment = paymentRepository.findById(id);
         if(payment == null) {
             throw new PaymentNotFoundException("Payment not found");
         }
-        return mapToDetailDTO(payment);
+        return (payment);
     }
 
     @Override
-    public List<PaymentDetailDTO> getPaymentsByUserId(Long userId) {
+    public List<Payment> getPaymentsByUserId(Long userId) {
         var user = userRepository.findById(userId);
         if(user == null) {
             throw new UserNotFoundException("User not found");
         }
-
-        List<PaymentDetailDTO> dtos = new ArrayList<>();
-        var payments = paymentRepository.findByUserId(userId);
-        for(Payment p : payments){
-            dtos.add(mapToDetailDTO(p));
-        }
-        return dtos;
+        return paymentRepository.findByUserId(userId);
     }
 
     @Override
@@ -100,13 +87,18 @@ public class PaymentServiceImpl implements PaymentService {
         return new PaymentDTO(payment.getId(),payment.getStatus(),user.getBalance());
     }
 
+    @Override
+    public PaymentDetailDTO mapToDetailedDTO(Payment payment) {
+        return new PaymentDetailDTO(payment.getId(),payment.getUser_id(),payment.getAmount(),payment.getStatus(),payment.getCreatedAt());
+    }
+
     private PaymentDetailDTO mapToDetailDTO(Payment payment) {
         return new PaymentDetailDTO(
                 payment.getId(),
                 payment.getUser_id(),
                 payment.getAmount(),
                 payment.getStatus(),
-                payment.getCreatedAt() != null ? payment.getCreatedAt().toLocalDateTime() : null
+                payment.getCreatedAt() != null ? payment.getCreatedAt() : null
         );
     }
 }

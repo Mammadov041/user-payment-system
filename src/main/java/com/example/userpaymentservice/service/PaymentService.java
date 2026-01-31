@@ -7,9 +7,10 @@ import com.example.userpaymentservice.entity.Payment;
 import java.util.List;
 
 public interface PaymentService {
-    PaymentDTO addPayment(Payment payment);
-    List<PaymentDetailDTO> getAllPayments();
-    PaymentDetailDTO getPaymentById(Long id);
-    List<PaymentDetailDTO> getPaymentsByUserId(Long userId);
+    Payment addPayment(Payment payment);
+    List<Payment> getAllPayments();
+    Payment getPaymentById(Long id);
+    List<Payment> getPaymentsByUserId(Long userId);
     PaymentDTO mapToDTO(Payment payment);
+    PaymentDetailDTO mapToDetailedDTO(Payment payment);
 }

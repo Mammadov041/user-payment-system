@@ -7,10 +7,10 @@ import com.example.userpaymentservice.entity.User;
 import java.util.List;
 
 public interface UserService {
-    UserDTO addUser(CreateUserDTO dto);
-    List<UserDTO> getAllUsers();
-    UserDTO getUserById(Long id);
-    UserDTO updateUser(Long id, CreateUserDTO dto);
+    User addUser(CreateUserDTO dto);
+    List<User> getAllUsers();
+    User getUserById(Long id);
+    User updateUser(Long id, CreateUserDTO dto);
     void deleteUser(Long id);
     UserDTO mapToDTO(User user);
 }

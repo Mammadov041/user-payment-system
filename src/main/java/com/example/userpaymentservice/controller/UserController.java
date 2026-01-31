@@ -3,6 +3,8 @@ package com.example.userpaymentservice.controller;
 import com.example.userpaymentservice.dto.CreateUserDTO;
 import com.example.userpaymentservice.dto.ErrorResponse;
 import com.example.userpaymentservice.dto.UserDTO;
+import com.example.userpaymentservice.dto.UserDetailDTO;
+import com.example.userpaymentservice.entity.User;
 import com.example.userpaymentservice.exception.UserNotFoundException;
 import com.example.userpaymentservice.service.UserServiceImpl;
 import org.slf4j.Logger;
@@ -12,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -43,11 +46,11 @@ public class UserController {
                         .body(new ErrorResponse("INVALID_BALANCE", "Balance cannot be negative"));
             }
 
-            UserDTO result = userService.addUser(dto);
+            var result = userService.addUser(dto);
 
             if("dev".equals(activeProfile)) {
                 logger.info("DEV MODE: User created successfully - userId: {}, fullName: {}",
-                        result.id(), result.fullName());
+                        result.getId(), result.getFullName());
             }
 
             return ResponseEntity.status(HttpStatus.CREATED).body(result);
@@ -61,18 +64,16 @@ public class UserController {
     }
 
     @GetMapping
-    public ResponseEntity<List<UserDTO>> getAllUsers() {
+    public ResponseEntity<List<UserDetailDTO>> getAllUsers() {
         if("dev".equals(activeProfile)) {
             logger.info("DEV MODE: Fetching all users");
         }
-
-        List<UserDTO> users = userService.getAllUsers();
-
+        List<User> users = userService.getAllUsers();
         if("dev".equals(activeProfile)) {
             logger.info("DEV MODE: Retrieved {} users", users.size());
         }
 
-        return ResponseEntity.ok(users);
+        return ResponseEntity.ok(users.stream().map(u -> new UserDetailDTO(u.getId(),u.getFullName(),u.getBalance())).toList());
     }
 
     @GetMapping("/{id}")
@@ -82,8 +83,8 @@ public class UserController {
         }
 
         try {
-            UserDTO user = userService.getUserById(id);
-            return ResponseEntity.ok(user);
+            User user = userService.getUserById(id);
+            return ResponseEntity.ok(new UserDetailDTO(user.getId(),user.getFullName(),user.getBalance()));
         } catch (UserNotFoundException e) {
             if("dev".equals(activeProfile)) {
                 logger.error("DEV MODE: User not found - {}", e.getMessage());
@@ -109,11 +110,11 @@ public class UserController {
                         .body(new ErrorResponse("INVALID_BALANCE", "Balance cannot be negative"));
             }
 
-            UserDTO result = userService.updateUser(id, dto);
+            User result = userService.updateUser(id, dto);
 
             if("dev".equals(activeProfile)) {
                 logger.info("DEV MODE: User updated successfully - userId: {}, fullName: {}",
-                        result.id(), result.fullName());
+                        result.getId(), result.getFullName());
             }
 
             return ResponseEntity.ok(result);

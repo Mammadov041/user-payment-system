@@ -40,8 +40,15 @@ public class PaymentRepositoryImpl implements PaymentRepository {
         return jdbcTemplate.update(query, payment.getUser_id(), payment.getAmount(), payment.getStatus());
     }
 
-    public int updateStatus(Long paymentId, String status) {
+    @Override
+    public int update(Payment payment) {
         String query = "UPDATE payments SET status=? WHERE id=?";
-        return jdbcTemplate.update(query, status, paymentId);
+        return jdbcTemplate.update(query, payment.getStatus(), payment.getId());
+    }
+
+    @Override
+    public Payment getUsersLastPayment(Long userId) {
+        var query = "SELECT * FROM payments WHERE user_id=? ORDER BY created_at DESC LIMIT 1";
+        return jdbcTemplate.queryForObject(query,new PaymentRowMapper(),userId);
     }
 }
