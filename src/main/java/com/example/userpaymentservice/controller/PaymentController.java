@@ -3,7 +3,6 @@ package com.example.userpaymentservice.controller;
 import com.example.userpaymentservice.dto.CreatePaymentDTO;
 import com.example.userpaymentservice.dto.ErrorResponse;
 import com.example.userpaymentservice.dto.PaymentDTO;
-import com.example.userpaymentservice.dto.PaymentDetailDTO;
 import com.example.userpaymentservice.entity.Payment;
 import com.example.userpaymentservice.exception.InsufficientBalanceException;
 import com.example.userpaymentservice.exception.PaymentNotFoundException;
@@ -48,7 +47,7 @@ public class PaymentController {
             var result = paymentService.addPayment(payment);
             if("dev".equals(activeProfile)) {
                 logger.info("DEV MODE: Payment created successfully - paymentId: {}, status: {}, newBalance: {}",
-                        result.getId(), result.getStatus(), userService.getUserById(result.getUser_id()));
+                        result.getId(), result.getStatus(), userService.getUserById(result.getUserId()));
             }
             return ResponseEntity.ok(paymentService.mapToDTO(result));
         } catch (InsufficientBalanceException e) {
@@ -78,7 +77,7 @@ public class PaymentController {
             logger.info("DEV MODE: Retrieved {} payments", payments.size());
         }
 
-        return ResponseEntity.ok(payments.stream().map(p -> new PaymentDTO(p.getId(),p.getStatus(),userService.getUserById(p.getUser_id()).getBalance())).toList());
+        return ResponseEntity.ok(payments.stream().map(p -> new PaymentDTO(p.getId(),p.getStatus(),userService.getUserById(p.getUserId()).getBalance(),p.getAmount())).toList());
     }
 
     @GetMapping("/{paymentId}")
@@ -112,7 +111,7 @@ public class PaymentController {
                 logger.info("DEV MODE: Retrieved {} payments for user {}", payments.size(), userId);
             }
 
-            var paymentsDetailed = payments.stream().map(p -> new PaymentDTO(p.getId(),p.getStatus(),userService.getUserById(p.getUser_id()).getBalance())).toList();
+            var paymentsDetailed = payments.stream().map(p -> new PaymentDTO(p.getId(),p.getStatus(),userService.getUserById(p.getUserId()).getBalance(),p.getAmount())).toList();
             return ResponseEntity.ok(paymentsDetailed);
         } catch (UserNotFoundException e) {
             if("dev".equals(activeProfile)) {

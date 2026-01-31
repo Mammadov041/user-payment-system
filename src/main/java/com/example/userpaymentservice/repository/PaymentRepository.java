@@ -1,19 +1,12 @@
 package com.example.userpaymentservice.repository;
 
 import com.example.userpaymentservice.entity.Payment;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface PaymentRepository {
-    List<Payment> findAll();
+public interface PaymentRepository extends JpaRepository<Payment,Long> {
+    List<Payment> findByUserId(Long userId, Sort sort);
 
-    List<Payment> findByUserId(Long userId);
-
-    Payment findById(Long paymentId);
-
-    int create(Payment payment);
-
-    int update(Payment payment);
-
-    Payment getUsersLastPayment(Long userId);
 }
